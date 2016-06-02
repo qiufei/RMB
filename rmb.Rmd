@@ -19,6 +19,7 @@ output:
 # load needed packages
 library(knitr)
 opts_chunk$set(Message=FALSE,echo=FALSE)
+library(printr)
 library(ggplot2)
 library(reshape2)
 library(Quandl)
