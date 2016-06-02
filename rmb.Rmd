@@ -1,0 +1,148 @@
+---
+title: "人民币汇率"
+author: "qiufei"
+date: "2016-06-01"
+output: 
+  html_document: 
+    fig_height: 7
+    fig_width: 9
+    keep_md: yes
+    number_sections: yes
+    theme: readable
+    toc: yes
+---
+
+# setup #
+
+```{r setup,Message=FALSE,echo=FALSE,include=FALSE,warning=FALSE}
+
+# load needed packages
+library(knitr)
+opts_chunk$set(Message=FALSE,echo=FALSE)
+library(ggplot2)
+library(reshape2)
+library(Quandl)
+library(pdfetch)
+library(quantmod)
+options("getSymbols.warning4.0"=FALSE)
+library(scales)
+library(plyr)
+library(dplyr)
+options(warn=-1)          #suprress warning globally
+## the default is
+## options(warn=0)
+## get data from fed
+## package quantmod
+fedata = function(x.name){
+    getSymbols(x.name,
+               src = "FRED",
+               auto.assign=FALSE #让getsymbol不要自动取名字
+                         )}
+## get multiple data from fed
+## package pdfetch
+mfedata = function(codes,names){
+    xts.dat = pdfetch_FRED(codes)
+    dat = data.frame(date = time(xts.dat),coredata(xts.dat))
+    colnames(dat) = names
+    mdat = melt(dat,id = 'date')
+    return(mdat)}
+## get data from quandl.com
+qdata = function(x.name){
+    Quandl(x.name, api_key="9iGeZZoG6Vc46rfs1AgJ")}
+## multiple series
+mqdata = function(codes,names){
+    dat = qdata(codes)
+    colnames(dat) = names
+    mdat = melt(dat,id = 'date')
+    return(mdat)}
+## pic
+## define needed functions
+## 
+simpic.f = function(code,label){
+    raw = getSymbols.FRED(code,auto.assign=FALSE)
+    raw.median = median(coredata(raw),na.rm = TRUE)
+    detail = summary(raw)[,2]
+    print(detail)
+    chartSeries(raw,name = label)
+}
+## 
+simpic.q = function(code,label){
+    raw = Quandl(code, api_key="9iGeZZoG6Vc46rfs1AgJ")
+    raw = as.xts(raw[,-1],order.by = raw[,1])
+    detail = summary(raw)[,2]
+    print(detail)
+    chartSeries(raw,name = label)
+}
+##
+twopic = function(data,colname2,colname3,label){
+    colnames(data) = c('year',colname2,colname3)
+    pic.data = melt(data,id = 'year')
+    ggplot(pic.data,aes(x = year,y = value,color = variable))+
+        geom_line()+
+        geom_point(size=0.5)+
+        ggtitle(label)
+}
+## multiple series plot using gglot2
+mggplot = function(dat,title){
+    ggplot(dat,aes(x = date,y = value,color = variable,shape = variable))+
+    geom_line()+
+    geom_point()+
+    ggtitle(title)}
+
+
+```
+
+
+# 人民币汇率 离岸与在岸价格对比 #
+
+CNH:https://www.quandl.com/data/HKEX/CUSM2017-US-Dollar-vs-Renminbi-Hong-Kong-USD-CNH-Futures-June-2017-CUSM2017
+用的最后成交价.
+
+CNY: https://www.quandl.com/data/BOE/XUDLBK73-Spot-exchange-rate-Chinese-Yuan-into-Dollar
+
+```{r }
+
+codes = c('HKEX/CUSM2017.4','BOE/XUDLBK73')
+names = c('date','CNH','CNY')
+rmb.compare = mqdata(codes,names)
+cny = filter(rmb.compare,variable == 'CNY')
+
+kable(tail(cny),caption = '近期人民币现货价格')
+
+rmb.plot = filter(rmb.compare,date>='2016-01-01')
+
+mggplot(rmb.plot,'人民币离岸(2017.6期货)与在岸价格对比')
+  
+
+```
+
+
+# 离岸人民币期货 #
+
+
+```{r rmb future}
+
+codes = c('HKEX/CUSN2016.4','HKEX/CUSQ2016.4','HKEX/CUSU2016.4','HKEX/CUSZ2016.4','HKEX/CUSH2017.4','HKEX/CUSM2017.4')
+names = c('date','2016.7','2016.8','2016.9','2016.12','2017.3','2017.6')
+rmb.future = mqdata(codes,names)
+mggplot(rmb.future,'人民币离岸期货价格')
+
+rmb.wide = dcast(rmb.future,...~variable)
+
+kable(tail(rmb.wide),caption = '近期人民币期货价格')
+  
+
+```
+
+从离岸期货价格看,人民币贬值预期明显.
+
+
+# 人民币历史汇率 #
+
+
+```{r }
+
+simpic.f('DEXCHUS','人民币对美元历史汇率')
+
+
+```
