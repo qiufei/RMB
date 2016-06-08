@@ -19,7 +19,7 @@ output:
 # load needed packages
 library(knitr)
 opts_chunk$set(Message=FALSE,echo=FALSE)
-library(printr)
+opts_chunk$set(results='asis')
 library(ggplot2)
 library(reshape2)
 library(Quandl)
@@ -108,7 +108,7 @@ names = c('date','CNH','CNY')
 rmb.compare = mqdata(codes,names)
 cny = filter(rmb.compare,variable == 'CNY')
 
-knitr::kable(tail(cny),caption = '近期人民币现货价格')
+kable(tail(cny),caption = '近期人民币现货价格')
 
 rmb.plot = filter(rmb.compare,date>='2016-01-01')
 
@@ -131,7 +131,6 @@ mggplot(rmb.future,'人民币离岸期货价格')
 rmb.wide = dcast(rmb.future,...~variable)
 
 knitr::kable(tail(rmb.wide),caption = '近期人民币期货价格')
-  
 
 ```
 
