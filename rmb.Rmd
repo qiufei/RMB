@@ -19,6 +19,7 @@ output:
 # load needed packages
 library(knitr)
 opts_chunk$set(Message=FALSE,echo=FALSE)
+opts_chunk$set(results='asis')
 library(ascii)
 library(ggplot2)
 library(reshape2)
@@ -112,6 +113,7 @@ CNH:https://www.quandl.com/data/HKEX/CUSM2017-US-Dollar-vs-Renminbi-Hong-Kong-US
 
 CNY: https://www.quandl.com/data/BOE/XUDLBK73-Spot-exchange-rate-Chinese-Yuan-into-Dollar
 
+
 ```{r }
 
 codes = c('HKEX/CUSM2017.4','BOE/XUDLBK73')
@@ -119,13 +121,17 @@ names = c('date','CNH','CNY')
 rmb.compare = mqdata(codes,names)
 cny = filter(rmb.compare,variable == 'CNY')
 
-gfm_table(tail(cny))
-
 rmb.plot = filter(rmb.compare,date>='2016-01-01')
 
 mggplot(rmb.plot,'人民币离岸(2017.6期货)与在岸价格对比')
-  
 
+```
+
+## 近期人民币汇率
+```{r}
+
+gfm_table(tail(cny))
+  
 ```
 
 
@@ -139,13 +145,18 @@ names = c('date','2016.7','2016.8','2016.9','2016.12','2017.3','2017.6')
 rmb.future = mqdata(codes,names)
 mggplot(rmb.future,'人民币离岸期货价格')
 
-rmb.wide = dcast(rmb.future,...~variable)
+```
 
+从离岸期货价格看,人民币贬值预期明显.
+
+```{r}
+
+rmb.wide = dcast(rmb.future,...~variable)
+## 近期离人民币汇率
 gfm_table(tail(rmb.wide))
 
 ```
 
-从离岸期货价格看,人民币贬值预期明显.
 
 
 # 人民币历史汇率 #
