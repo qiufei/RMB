@@ -20,6 +20,7 @@ output:
 library(knitr)
 opts_chunk$set(Message=FALSE,echo=FALSE)
 opts_chunk$set(results='asis')
+library(printr)
 library(ggplot2)
 library(reshape2)
 library(Quandl)
