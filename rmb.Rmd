@@ -19,8 +19,7 @@ output:
 # load needed packages
 library(knitr)
 opts_chunk$set(Message=FALSE,echo=FALSE)
-opts_chunk$set(results='asis')
-library(printr)
+library(ascii)
 library(ggplot2)
 library(reshape2)
 library(Quandl)
@@ -91,6 +90,17 @@ mggplot = function(dat,title){
     geom_point()+
     ggtitle(title)}
 
+## create table in github
+gfm_table <- function(x, ...) {
+    require(ascii)
+    y <- capture.output(print(ascii(x, ...), type = "org"))
+    # substitute + with | for table markup
+    # TODO: modify regex so that only + signs in markup,
+    #   like -+- are substituted
+    y <- gsub("[+]", "|", y)
+    return(writeLines(y))
+}
+
 
 ```
 
@@ -109,7 +119,7 @@ names = c('date','CNH','CNY')
 rmb.compare = mqdata(codes,names)
 cny = filter(rmb.compare,variable == 'CNY')
 
-kable(tail(cny),caption = '近期人民币现货价格')
+gfm_table(tail(cny))
 
 rmb.plot = filter(rmb.compare,date>='2016-01-01')
 
@@ -131,7 +141,7 @@ mggplot(rmb.future,'人民币离岸期货价格')
 
 rmb.wide = dcast(rmb.future,...~variable)
 
-knitr::kable(tail(rmb.wide),caption = '近期人民币期货价格')
+gfm_table(tail(rmb.wide))
 
 ```
 
